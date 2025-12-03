@@ -2,18 +2,22 @@
 
 namespace Database\Seeders;
 
+use App\Models\Role;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
-class DatabaseSeeder extends Seeder
+class RoleSeeder extends Seeder
 {
     use WithoutModelEvents;
 
     /**
-     * Seed the application's database.
+     * Run the database seeds.
      */
     public function run(): void
     {
-        $this->call(RoleSeeder::class);
+        Role::firstOrCreate(
+            ['number' => 1],
+            ['name' => 'Role Manager']
+        );
     }
 }
