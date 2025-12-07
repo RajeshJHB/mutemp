@@ -106,11 +106,7 @@ class UserRoleController extends Controller implements HasMiddleware
         // Ensure at least one role manager exists after update
         User::ensureRoleManagerExists();
 
-        $message = $updatedCount === 1
-            ? 'Successfully updated roles for 1 user.'
-            : "Successfully updated roles for {$updatedCount} user(s).";
-
-        return redirect()->route('user-roles.index')->with('success', $message);
+        return redirect()->route('user-roles.index')->with('success', 'Roles Updated');
     }
 
     public function destroy(User $user): RedirectResponse

@@ -5,20 +5,21 @@
 @section('content')
 <div class="bg-white rounded-lg shadow-md p-6">
     <div class="flex justify-between items-center mb-6">
-        <h1 class="text-3xl font-bold">User Role Assignment</h1>
-        <div class="flex flex-col items-end gap-2">
-            <a href="{{ route('dashboard') }}" id="back-link" class="text-blue-500 hover:text-blue-700">← Back to Dashboard</a>
-            <button type="submit" form="user-roles-form" id="save-button" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded">
-                Save All Changes
+        <div class="flex items-center gap-3">
+            <h1 class="text-3xl font-bold">User Role Assignment</h1>
+            @if(session('success'))
+                <div id="success-message" class="bg-green-50 border border-green-200 text-green-800 px-3 py-1 rounded text-sm">
+                    {{ session('success') }}
+                </div>
+            @else
+                <div id="success-message" class="hidden"></div>
+            @endif
+            <button type="submit" form="user-roles-form" id="save-button" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded text-sm hidden">
+                Save Changes
             </button>
         </div>
+        <a href="{{ route('dashboard') }}" id="back-link" class="text-blue-500 hover:text-blue-700">← Back to Dashboard</a>
     </div>
-
-    @if(session('success'))
-        <div class="mb-4 bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded">
-            <p>{{ session('success') }}</p>
-        </div>
-    @endif
 
     @if(session('error'))
         <div class="mb-4 bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded">
@@ -28,22 +29,15 @@
 
     <form method="POST" action="{{ route('user-roles.bulk-update') }}" id="user-roles-form">
         @csrf
-        
-        <div class="mb-6 flex justify-center">
-            <span id="unsaved-indicator" class="text-sm text-gray-500 hidden">
-                You have unsaved changes
-            </span>
-        </div>
 
         <div class="overflow-x-auto">
             <table class="min-w-full bg-white border border-gray-300">
                 <thead>
                     <tr class="bg-gray-100">
-                        <th class="px-4 py-2 border-b">User Name</th>
-                        <th class="px-4 py-2 border-b">Email</th>
-                        <th class="px-4 py-2 border-b">Current Roles</th>
-                        <th class="px-4 py-2 border-b">Assign Roles</th>
-                        <th class="px-4 py-2 border-b">Actions</th>
+                        <th class="px-4 py-2 border-b text-left align-top">User Name</th>
+                        <th class="px-4 py-2 border-b text-left align-top">Email</th>
+                        <th class="px-4 py-2 border-b text-left align-top">Assign Roles</th>
+                        <th class="px-4 py-2 border-b text-left align-top">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -51,17 +45,6 @@
                         <tr>
                             <td class="px-4 py-2 border-b">{{ $user->name }}</td>
                             <td class="px-4 py-2 border-b">{{ $user->email }}</td>
-                            <td class="px-4 py-2 border-b">
-                                @if($user->roles->count() > 0)
-                                    <ul class="list-disc list-inside">
-                                        @foreach($user->roles as $role)
-                                            <li>Role_{{ $role->number }} - {{ $role->name }}</li>
-                                        @endforeach
-                                    </ul>
-                                @else
-                                    <span class="text-gray-500">No roles assigned</span>
-                                @endif
-                            </td>
                             <td class="px-4 py-2 border-b">
                                 <div class="space-y-2">
                                     @php
@@ -82,12 +65,9 @@
                                                    data-original-checked="{{ $isChecked ? 'true' : 'false' }}"
                                                    {{ $isChecked ? 'checked' : '' }}
                                                    {{ $isDisabled ? 'disabled' : '' }}
-                                                   class="mr-2 role-checkbox-input">
+                                                   class="mr-2 role-checkbox-input w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2">
                                             <span>
                                                 Role_{{ $role->number }} - {{ $role->name }}
-                                                @if($isDisabled)
-                                                    <span class="text-xs text-gray-500 ml-1">(Cannot remove your own Role Manager)</span>
-                                                @endif
                                             </span>
                                         </label>
                                     @endforeach
@@ -95,7 +75,12 @@
                             </td>
                             <td class="px-4 py-2 border-b">
                                 @if($isCurrentUser)
-                                    <span class="text-xs text-gray-500 italic">Cannot delete yourself</span>
+                                    <div class="flex flex-col gap-1">
+                                        @if($user->isRoleManager())
+                                            <span class="text-xs text-gray-500 italic">Role_1 - Cannot remove this Role yourself</span>
+                                        @endif
+                                        <span class="text-xs text-gray-500 italic">Cannot delete yourself</span>
+                                    </div>
                                 @else
                                     <button type="button" 
                                             class="delete-user-btn bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-3 rounded text-sm"
@@ -108,7 +93,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="px-4 py-2 text-center text-gray-500">No users found</td>
+                            <td colspan="4" class="px-4 py-2 text-center text-gray-500">No users found</td>
                         </tr>
                     @endforelse
                 </tbody>
@@ -142,9 +127,9 @@ document.addEventListener('DOMContentLoaded', function() {
     let hasUnsavedChanges = false;
     const form = document.getElementById('user-roles-form');
     const saveButton = document.getElementById('save-button');
-    const unsavedIndicator = document.getElementById('unsaved-indicator');
     const backLink = document.getElementById('back-link');
     const deleteModal = document.getElementById('delete-modal');
+    const successMessage = document.getElementById('success-message');
     let deleteForm = null;
 
     // Track original state
@@ -158,7 +143,7 @@ document.addEventListener('DOMContentLoaded', function() {
         originalState[key] = checkbox.dataset.originalChecked === 'true';
     });
 
-    // Function to check if form has unsaved changes
+    // Function to check if form has unsaved changes and update styling
     function checkForChanges() {
         let hasChanges = false;
         
@@ -171,21 +156,35 @@ document.addEventListener('DOMContentLoaded', function() {
             const isCurrentlyChecked = checkbox.checked;
             const wasOriginallyChecked = originalState[key];
             
+            // Apply yellow styling for unsaved changes, blue for saved/original state
             if (isCurrentlyChecked !== wasOriginallyChecked) {
                 hasChanges = true;
+                // Yellow styling for unsaved changes
+                checkbox.classList.add('unsaved-changed');
+                checkbox.classList.remove('text-blue-600', 'focus:ring-blue-500');
+                checkbox.classList.add('text-yellow-600', 'focus:ring-yellow-500');
+            } else {
+                // Blue styling for saved/original state
+                checkbox.classList.remove('unsaved-changed', 'text-yellow-600', 'focus:ring-yellow-500');
+                checkbox.classList.add('text-blue-600', 'focus:ring-blue-500');
             }
         });
         
         hasUnsavedChanges = hasChanges;
         
         if (hasUnsavedChanges) {
-            unsavedIndicator.classList.remove('hidden');
-            unsavedIndicator.classList.add('text-orange-600', 'font-semibold');
+            saveButton.classList.remove('hidden');
+            // Hide success message when new changes are made
+            if (successMessage) {
+                successMessage.classList.add('hidden');
+            }
         } else {
-            unsavedIndicator.classList.add('hidden');
-            unsavedIndicator.classList.remove('text-orange-600', 'font-semibold');
+            saveButton.classList.add('hidden');
         }
     }
+    
+    // Initialize styling on page load
+    checkForChanges();
 
     // Track checkbox changes
     checkboxes.forEach(checkbox => {
@@ -250,4 +249,17 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+
+<style>
+    /* Yellow checkbox styling for unsaved changes */
+    input.role-checkbox-input.unsaved-changed:checked {
+        accent-color: #eab308;
+        background-color: #fef08a;
+    }
+    
+    /* Blue checkbox styling for saved/original state */
+    input.role-checkbox-input:checked:not(.unsaved-changed) {
+        accent-color: #2563eb;
+    }
+</style>
 @endsection

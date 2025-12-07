@@ -26,18 +26,5 @@
         @endif
     </div>
 
-    @if($user->isRoleManager())
-        <div class="mt-6 pt-6 border-t">
-            <h2 class="text-xl font-semibold mb-4">Role Manager Actions</h2>
-            <div class="space-x-4">
-                <a href="{{ route('roles.index') }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                    Manage Roles
-                </a>
-                <a href="{{ route('user-roles.index') }}" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
-                    Assign Roles to Users
-                </a>
-            </div>
-        </div>
-    @endif
 </div>
 @endsection

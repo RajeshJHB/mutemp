@@ -15,11 +15,35 @@
                 </div>
                 <div class="flex items-center space-x-4">
                     @auth
-                        <span class="text-gray-700">{{ Auth::user()->name }}</span>
-                        <form method="POST" action="{{ route('logout') }}">
-                            @csrf
-                            <button type="submit" class="text-red-600 hover:text-red-800">Logout</button>
-                        </form>
+                        <div class="relative" id="user-menu-container">
+                            <button id="user-menu-button" class="flex items-center text-gray-700 hover:text-gray-900 focus:outline-none">
+                                <span>{{ Auth::user()->name }}</span>
+                                <svg id="user-menu-arrow" class="ml-1 h-4 w-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                </svg>
+                            </button>
+                            
+                            <div id="user-menu-dropdown" 
+                                 class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 border border-gray-200 hidden">
+                                @if(Auth::user()->isRoleManager())
+                                    <a href="{{ route('roles.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                        Manage Roles
+                                    </a>
+                                    <a href="{{ route('user-roles.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                        Assign Roles
+                                    </a>
+                                @endif
+                                <a href="{{ route('profile.password') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                    Password Reset
+                                </a>
+                                <form method="POST" action="{{ route('logout') }}">
+                                    @csrf
+                                    <button type="submit" class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100">
+                                        Logout
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
                     @else
                         <a href="{{ route('login') }}" class="text-gray-700 hover:text-gray-900">Login</a>
                         <a href="{{ route('register') }}" class="text-gray-700 hover:text-gray-900">Register</a>
@@ -31,12 +55,6 @@
 
     <main class="py-10">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            @if(session('success'))
-                <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
-                    {{ session('success') }}
-                </div>
-            @endif
-
             @if(session('error'))
                 <div class="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
                     {{ session('error') }}
@@ -56,5 +74,38 @@
             @yield('content')
         </div>
     </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const userMenuButton = document.getElementById('user-menu-button');
+            const userMenuDropdown = document.getElementById('user-menu-dropdown');
+            const userMenuArrow = document.getElementById('user-menu-arrow');
+            
+            if (userMenuButton && userMenuDropdown) {
+                // Toggle dropdown on button click
+                userMenuButton.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const isHidden = userMenuDropdown.classList.contains('hidden');
+                    
+                    if (isHidden) {
+                        userMenuDropdown.classList.remove('hidden');
+                        userMenuArrow.style.transform = 'rotate(180deg)';
+                    } else {
+                        userMenuDropdown.classList.add('hidden');
+                        userMenuArrow.style.transform = 'rotate(0deg)';
+                    }
+                });
+                
+                // Close dropdown when clicking outside
+                document.addEventListener('click', function(e) {
+                    const container = document.getElementById('user-menu-container');
+                    if (container && !container.contains(e.target)) {
+                        userMenuDropdown.classList.add('hidden');
+                        userMenuArrow.style.transform = 'rotate(0deg)';
+                    }
+                });
+            }
+        });
+    </script>
 </body>
 </html>
