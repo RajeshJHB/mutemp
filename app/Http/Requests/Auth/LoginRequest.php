@@ -25,7 +25,8 @@ class LoginRequest extends FormRequest
     {
         $credentials = $this->only('email', 'password');
 
-        if (! Auth::attempt($credentials, $this->boolean('remember'))) {
+        // Never use "remember me" - always require re-login after browser closes
+        if (! Auth::attempt($credentials, false)) {
             throw ValidationException::withMessages([
                 'email' => __('auth.failed'),
             ]);

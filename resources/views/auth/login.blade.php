@@ -21,11 +21,10 @@
                    class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
         </div>
 
-        <div class="mb-6">
-            <label class="flex items-center">
-                <input type="checkbox" name="remember" class="mr-2">
-                <span class="text-sm text-gray-700">Remember me</span>
-            </label>
+        <div class="mb-4">
+            <a href="{{ route('password.request') }}" class="text-sm text-blue-500 hover:text-blue-800">
+                Forgot your password?
+            </a>
         </div>
 
         <div class="flex items-center justify-between">

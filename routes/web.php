@@ -1,7 +1,9 @@
 <?php
 
+use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserRoleController;
@@ -18,6 +20,12 @@ Route::middleware('guest')->group(function () {
 
     Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [LoginController::class, 'login']);
+
+    // Password Reset Routes
+    Route::get('/forgot-password', [ForgotPasswordController::class, 'showLinkRequestForm'])->name('password.request');
+    Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetLinkEmail'])->name('password.email');
+    Route::get('/reset-password/{token}', [ResetPasswordController::class, 'showResetForm'])->name('password.reset');
+    Route::post('/reset-password', [ResetPasswordController::class, 'reset'])->name('password.update');
 });
 
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout')->middleware('auth');
@@ -60,6 +68,7 @@ Route::middleware(['auth', 'verified'])->prefix('roles')->name('roles.')->group(
 // User Role Assignment Routes (Role Manager only)
 Route::middleware(['auth', 'verified'])->prefix('user-roles')->name('user-roles.')->group(function () {
     Route::get('/', [UserRoleController::class, 'index'])->name('index');
+    Route::post('/bulk-update', [UserRoleController::class, 'bulkUpdate'])->name('bulk-update');
     Route::put('/{user}', [UserRoleController::class, 'update'])->name('update');
     Route::delete('/{user}', [UserRoleController::class, 'destroy'])->name('destroy');
 });
