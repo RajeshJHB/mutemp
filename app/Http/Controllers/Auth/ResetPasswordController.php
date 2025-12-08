@@ -40,3 +40,4 @@ class ResetPasswordController extends Controller
         return back()->withErrors(['email' => [__($status)]]);
     }
 }
+

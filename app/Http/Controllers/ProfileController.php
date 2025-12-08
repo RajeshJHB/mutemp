@@ -29,3 +29,4 @@ class ProfileController extends Controller
         return redirect()->route('dashboard')->with('success', 'Password updated successfully.');
     }
 }
+
